@@ -239,9 +239,37 @@
                     }, this);
                 }, this));
 
-                this.$("button.centrality").on("click", function () {
-                    console.log("centrality!");
-                });
+                this.$("button.centrality").on("click", _.bind(function () {
+                    var graph = this.graph,
+                        data = [];
+
+                    // Convert graph connectivity into Clique format.
+                    _.each(graph.get("nodes"), function (node) {
+                        data.push({
+                            _id: {
+                                $oid: node.key
+                            },
+                            type: "node"
+                        });
+                    });
+
+                    _.each(graph.get("links"), function (link) {
+                        data.push({
+                            _id: {
+                                $oid: link.key
+                            },
+                            type: "link",
+                            source: {
+                                $oid: link.source.key
+                            },
+                            target: {
+                                $oid: link.target.key
+                            }
+                        });
+                    });
+
+                    console.log(data);
+                }, this));
 
                 this.$("button.ungroup").on("click", _.bind(function () {
                     this.graph.adapter.findNodeByKey(this.model.focused())
