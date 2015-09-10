@@ -239,6 +239,10 @@
                     }, this);
                 }, this));
 
+                this.$("button.centrality").on("click", function () {
+                    console.log("centrality!");
+                });
+
                 this.$("button.ungroup").on("click", _.bind(function () {
                     this.graph.adapter.findNodeByKey(this.model.focused())
                         .then(_.bind(this.ungroupNode, this));

@@ -32,9 +32,10 @@ mixin item(key, value)
                 button(type="button").space-right.btn.btn-primary.btn-xs.expand Expand #[span.glyphicon.glyphicon-fullscreen]
                 if node.getData("grouped")
                     button(type="button").space-right.btn.btn-primary.btn-xs.collapser Collapse #[span.glyphicon.glyphicon-resize-small]
-                    button(type="button").btn.btn-primary.btn-xs.ungroup Ungroup #[span.glyphicon.glyphicon-scissors]
+                    button(type="button").space-right.btn.btn-primary.btn-xs.ungroup Ungroup #[span.glyphicon.glyphicon-scissors]
                 else
-                    button(type="button").btn.btn-primary.btn-xs.collapser Collapse #[span.glyphicon.glyphicon-resize-small]
+                    button(type="button").space-right.btn.btn-primary.btn-xs.collapser Collapse #[span.glyphicon.glyphicon-resize-small]
+                button(type="button").btn.btn-primary.btn-xs.centrality Centrality #[span.glyphicon.glyphicon-screenshot]
 
             if selectionSize > 1
                 .row
