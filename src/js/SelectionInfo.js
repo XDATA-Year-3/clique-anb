@@ -241,11 +241,11 @@
 
                 this.$("button.centrality").on("click", _.bind(function () {
                     var graph = this.graph,
-                        data = [];
+                        subgraph = [];
 
                     // Convert graph connectivity into Clique format.
                     _.each(graph.get("nodes"), function (node) {
-                        data.push({
+                        subgraph.push({
                             _id: {
                                 $oid: node.key
                             },
@@ -254,7 +254,7 @@
                     });
 
                     _.each(graph.get("links"), function (link) {
-                        data.push({
+                        subgraph.push({
                             _id: {
                                 $oid: link.key
                             },
@@ -268,7 +268,12 @@
                         });
                     });
 
-                    console.log(data);
+                    $.getJSON("assets/tangelo/romanesco/centrality", {
+                        node: this.model.focused(),
+                        graph: JSON.stringify(subgraph)
+                    }).then(function (result) {
+                        window.alert("Centrality: " + result);
+                    });
                 }, this));
 
                 this.$("button.ungroup").on("click", _.bind(function () {
