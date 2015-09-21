@@ -1,5 +1,5 @@
 /*jshint browser: true, jquery: true */
-/*global clique, _, tangelo, d3, PEG */
+/*global app, clique, _, tangelo, d3, PEG */
 
 $(function () {
     "use strict";
@@ -289,14 +289,14 @@ $(function () {
             rootColor: "gold"
         });
 
-        window.info = info = new clique.view.SelectionInfo({
+        window.info = info = new app.view.SelectionInfo({
             model: view.selection,
             el: "#info",
             graph: graph
         });
         info.render();
 
-        linkInfo = new clique.view.LinkInfo({
+        linkInfo = new app.view.LinkInfo({
             model: view.linkSelection,
             el: "#link-info",
             graph: graph

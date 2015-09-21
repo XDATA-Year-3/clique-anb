@@ -1764,7 +1764,7 @@
   }(this));
 }()); // IIFE
 
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.jade = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.jade=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1946,21 +1946,12 @@ exports.attrs = function attrs(obj, terse){
  * @api private
  */
 
-var jade_encode_html_rules = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&quot;'
-};
-var jade_match_html = /[&<>"]/g;
-
-function jade_encode_char(c) {
-  return jade_encode_html_rules[c] || c;
-}
-
-exports.escape = jade_escape;
-function jade_escape(html){
-  var result = String(html).replace(jade_match_html, jade_encode_char);
+exports.escape = function escape(html){
+  var result = String(html)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
   if (result === '' + html) return html;
   else return result;
 };
@@ -2007,11 +1998,6 @@ exports.rethrow = function rethrow(err, filename, lineno, str){
   throw err;
 };
 
-exports.DebugItem = function DebugItem(lineno, filename) {
-  this.lineno = lineno;
-  this.filename = filename;
-}
-
 },{"fs":2}],2:[function(require,module,exports){
 
 },{}]},{},[1])(1)
@@ -2039,133 +2025,6 @@ exports.DebugItem = function DebugItem(lineno, filename) {
     clique.model = {};
     clique.view = {};
 }());
-
-(function (window) {
-window.clique.template = window.clique.template || {};
-window.clique.template.cola = function template(locals) {
-var buf = [];
-var jade_mixins = {};
-var jade_interp;
-
-buf.push("<g><g class=\"links\"></g><g class=\"nodes\"></g></g>");;return buf.join("");
-}})(window);
-
-(function (window) {
-window.clique.template = window.clique.template || {};
-window.clique.template.linkInfo = function template(locals) {
-var buf = [];
-var jade_mixins = {};
-var jade_interp;
-;var locals_for_with = (locals || {});(function (_, link, undefined) {
-jade_mixins["item"] = function(key, value){
-var block = (this && this.block), attributes = (this && this.attributes) || {};
-buf.push("<tr><td class=\"text-right\"><strong>" + (jade.escape(null == (jade_interp = key) ? "" : jade_interp)) + "</strong></td><td>" + (jade.escape(null == (jade_interp = value) ? "" : jade_interp)) + "</td></tr>");
-};
-buf.push("<div class=\"container full-width\">");
-if ( _.isUndefined(link))
-{
-buf.push("<em>(Selection is empty)</em>");
-}
-else
-{
-buf.push("<nav><ul class=\"pagination\"><li class=\"prev\"><a aria-label=\"Previous\" class=\"virtual-link prev\"><span aria-hidden=\"true\">&laquo;</span></a></li><li class=\"next\"><a aria-label=\"Next\" class=\"virtual-link next\"><span aria-hidden=\"true\">&raquo;</span></a></li></ul></nav><div class=\"container full-width\"><div class=\"row\"><div class=\"col-md-1\"><table class=\"table table-striped table-bordered select-ok\">");
-jade_mixins["item"]("key", link.key());
-// iterate link.getAllData()
-;(function(){
-  var $$obj = link.getAllData();
-  if ('number' == typeof $$obj.length) {
-
-    for (var $index = 0, $$l = $$obj.length; $index < $$l; $index++) {
-      var item = $$obj[$index];
-
-jade_mixins["item"](item[0], item[1]);
-    }
-
-  } else {
-    var $$l = 0;
-    for (var $index in $$obj) {
-      $$l++;      var item = $$obj[$index];
-
-jade_mixins["item"](item[0], item[1]);
-    }
-
-  }
-}).call(this);
-
-buf.push("</table></div></div></div>");
-}
-buf.push("</div>");}.call(this,"_" in locals_for_with?locals_for_with._:typeof _!=="undefined"?_:undefined,"link" in locals_for_with?locals_for_with.link:typeof link!=="undefined"?link:undefined,"undefined" in locals_for_with?locals_for_with.undefined:typeof undefined!=="undefined"?undefined:undefined));;return buf.join("");
-}})(window);
-
-(function (window) {
-window.clique.template = window.clique.template || {};
-window.clique.template.selectionInfo = function template(locals) {
-var buf = [];
-var jade_mixins = {};
-var jade_interp;
-;var locals_for_with = (locals || {});(function (_, node, selectionSize, undefined) {
-jade_mixins["item"] = function(key, value){
-var block = (this && this.block), attributes = (this && this.attributes) || {};
-buf.push("<tr><td class=\"text-right\"><strong>" + (jade.escape(null == (jade_interp = key) ? "" : jade_interp)) + "</strong></td><td>" + (jade.escape(null == (jade_interp = value) ? "" : jade_interp)) + "</td></tr>");
-};
-buf.push("<div class=\"container full-width\">");
-if ( _.isUndefined(node))
-{
-buf.push("<em>(Selection is empty)</em>");
-}
-else
-{
-buf.push("<nav><ul class=\"pagination\"><li class=\"prev\"><a aria-label=\"Previous\" class=\"virtual-link prev\"><span aria-hidden=\"true\">&laquo;</span></a></li><li class=\"next\"><a aria-label=\"Next\" class=\"virtual-link next\"><span aria-hidden=\"true\">&raquo;</span></a></li></ul></nav><div class=\"container full-width\"><div class=\"row\"><div class=\"col-md-1\"><table class=\"table table-striped table-bordered select-ok\">");
-jade_mixins["item"]("key", node.key());
-// iterate node.getAllData()
-;(function(){
-  var $$obj = node.getAllData();
-  if ('number' == typeof $$obj.length) {
-
-    for (var $index = 0, $$l = $$obj.length; $index < $$l; $index++) {
-      var item = $$obj[$index];
-
-jade_mixins["item"](item[0], item[1]);
-    }
-
-  } else {
-    var $$l = 0;
-    for (var $index in $$obj) {
-      $$l++;      var item = $$obj[$index];
-
-jade_mixins["item"](item[0], item[1]);
-    }
-
-  }
-}).call(this);
-
-buf.push("</table></div></div><div class=\"row\"><h5>Node</h5><button type=\"button\" class=\"space-right btn btn-info btn-xs remove\">Hide <span class=\"glyphicon glyphicon-eye-close\"></span></button>");
-if ( node.getData("deleted"))
-{
-buf.push("<button type=\"button\" class=\"space-right btn btn-danger btn-xs delete\">Undelete <span class=\"glyphicon glyphicon-remove\"></span></button>");
-}
-else
-{
-buf.push("<button type=\"button\" class=\"space-right btn btn-danger btn-xs delete\">Delete <span class=\"glyphicon glyphicon-remove\"></span></button>");
-}
-buf.push("<button type=\"button\" class=\"space-right btn btn-primary btn-xs expand\">Expand <span class=\"glyphicon glyphicon-fullscreen\"></span></button>");
-if ( node.getData("grouped"))
-{
-buf.push("<button type=\"button\" class=\"space-right btn btn-primary btn-xs collapser\">Collapse <span class=\"glyphicon glyphicon-resize-small\"></span></button><button type=\"button\" class=\"btn btn-primary btn-xs ungroup\">Ungroup <span class=\"glyphicon glyphicon-scissors\"></span></button>");
-}
-else
-{
-buf.push("<button type=\"button\" class=\"btn btn-primary btn-xs collapser\">Collapse <span class=\"glyphicon glyphicon-resize-small\"></span></button>");
-}
-buf.push("</div>");
-if ( selectionSize > 1)
-{
-buf.push("<div class=\"row\"><h5>Selection</h5><button type=\"button\" class=\"space-right btn btn-info btn-xs remove-sel\">Hide <span class=\"glyphicon glyphicon-eye-close\"></span></button><button type=\"button\" class=\"space-right btn btn-danger btn-xs delete-sel\">Delete <span class=\"glyphicon glyphicon-remove\"></span></button><button type=\"button\" class=\"space-right btn btn-primary btn-xs expand-sel\">Expand <span class=\"glyphicon glyphicon-fullscreen\"></span></button><button type=\"button\" class=\"space-right btn btn-primary btn-xs collapser-sel\">Collapse <span class=\"glyphicon glyphicon-resize-small\"></span></button><button type=\"button\" class=\"btn btn-primary btn-xs group-sel\">Group <span class=\"glyphicon glyphicon-paperclip\"></span></button></div>");
-}
-buf.push("</div>");
-}
-buf.push("</div>");}.call(this,"_" in locals_for_with?locals_for_with._:typeof _!=="undefined"?_:undefined,"node" in locals_for_with?locals_for_with.node:typeof node!=="undefined"?node:undefined,"selectionSize" in locals_for_with?locals_for_with.selectionSize:typeof selectionSize!=="undefined"?selectionSize:undefined,"undefined" in locals_for_with?locals_for_with.undefined:typeof undefined!=="undefined"?undefined:undefined));;return buf.join("");
-}})(window);
 
 (function (clique, _, $) {
     "use strict";
@@ -2866,7 +2725,8 @@ buf.push("</div>");}.call(this,"_" in locals_for_with?locals_for_with._:typeof _
 
     clique.view.Cola = Backbone.View.extend({
         initialize: function (options) {
-            var userFill,
+            var group,
+                userFill,
                 userNodeRadius;
 
             clique.util.require(this.model, "model");
@@ -2934,7 +2794,23 @@ buf.push("</div>");}.call(this,"_" in locals_for_with?locals_for_with._:typeof _
             this.selection = new clique.model.Selection();
             this.linkSelection = new clique.model.Selection();
 
-            this.$el.html(clique.template.cola());
+            // Empty the target element.
+            d3.select(this.el)
+                .selectAll("*")
+                .remove();
+
+            // Place a group element in the target element.
+            group = d3.select(this.el)
+                .append("g");
+
+            // Place two more group elements in the group element - one for
+            // nodes and one for links (the links go first so they are drawn
+            // "under" the nodes).
+            group.append("g")
+                .classed("links", true);
+            group.append("g")
+                .classed("nodes", true);
+
             this.listenTo(this.model, "change", _.debounce(this.render, 100));
             this.listenTo(this.selection, "focused", function (focused) {
                 this.focused = focused;
@@ -3516,312 +3392,3 @@ buf.push("</div>");}.call(this,"_" in locals_for_with?locals_for_with._:typeof _
         }
     });
 }(window.clique, window.Backbone, window._, window.d3, window.cola));
-
-(function (clique, Backbone, _) {
-    "use strict";
-
-    clique.view.LinkInfo = Backbone.View.extend({
-        initialize: function (options) {
-            var debRender;
-
-            options = options || {};
-            this.graph = options.graph;
-
-            clique.util.require(this.model, "model");
-            clique.util.require(this.graph, "graph");
-
-            debRender = _.debounce(this.render, 100);
-
-            this.listenTo(this.model, "focused", debRender);
-            this.listenTo(this.model, "focused", debRender);
-        },
-
-        render: function () {
-            var key,
-                doRender;
-
-            doRender = _.bind(function (link) {
-                this.$el.html(clique.template.linkInfo({
-                    link: link
-                }));
-
-                this.$("a.prev").on("click", _.bind(function () {
-                    this.model.focusLeft();
-                }, this));
-
-                this.$("a.next").on("click", _.bind(function () {
-                    this.model.focusRight();
-                }, this));
-            }, this);
-
-            key = this.model.focused();
-            if (!key) {
-                doRender(undefined);
-            } else {
-                this.graph.adapter.findLink({
-                    key: key
-                }).then(doRender);
-            }
-        }
-    });
-}(window.clique, window.Backbone, window._));
-
-(function (clique, Backbone, _) {
-    "use strict";
-
-    var $ = Backbone.$;
-
-    clique.view.SelectionInfo = Backbone.View.extend({
-        initialize: function (options) {
-            var debRender;
-
-            clique.util.require(this.model, "model");
-            clique.util.require(options.graph, "graph");
-
-            options = options || {};
-            this.graph = options.graph;
-
-            debRender = _.debounce(this.render, 100);
-
-            this.listenTo(this.model, "change", debRender);
-            this.listenTo(this.model, "focused", debRender);
-            this.listenTo(this.graph, "change", debRender);
-        },
-
-        hideNode: function (node) {
-            node.setTransient("selected", false);
-            node.clearTransient("root");
-            this.graph.removeNeighborhood({
-                center: node,
-                radius: 0
-            });
-        },
-
-        deleteNode: function (node, deleted) {
-            if (deleted) {
-                node.setData("deleted", true);
-                this.hideNode(node);
-            } else {
-                node.clearData("deleted");
-                this.render();
-            }
-        },
-
-        expandNode: function (node) {
-            this.graph.addNeighborhood({
-                center: node,
-                radius: 1
-            });
-        },
-
-        collapseNode: function (node) {
-            var loners,
-                mutators;
-
-            // Find all neighbors of the node that have exactly one neighbor.
-            loners = _.filter(this.graph.neighbors(node), function (nbr) {
-                return _.size(this.graph.neighbors(nbr)) === 1;
-            }, this);
-
-            // Extract the mutator objects for these nodes.
-            mutators = _.map(loners, function (key) {
-                return this.graph.adapter.getMutator({
-                    _id: {
-                        $oid: key
-                    }
-                });
-            }, this);
-
-            // Hide them.
-            _.each(mutators, _.partial(this.hideNode, _, false), this);
-        },
-
-        groupNodes: function (nodes) {
-            var nodeSet,
-                newKey;
-
-            // Construct a new node with special properties.
-            this.graph.adapter.newNode({
-                grouped: true
-            }).then(_.bind(function (mongoRec) {
-                newKey = mongoRec._id.$oid;
-
-                // Find all links to/from the nodes in the group.
-                return $.when.apply($, _.flatten(_.map(nodes, _.bind(function (node) {
-                    return [
-                        this.graph.adapter.findLinks({
-                            source: node
-                        }),
-                        this.graph.adapter.findLinks({
-                            target: node
-                        })
-                    ];
-                }, this)), true));
-            }, this)).then(_.bind(function () {
-                var links,
-                    addLinks = [];
-
-                links = Array.prototype.concat.apply([], Array.prototype.slice.call(arguments));
-
-                nodeSet = new clique.util.Set();
-                _.each(nodes, _.bind(function (node) {
-                    nodeSet.add(node);
-
-                    // Add an "inclusion" link between the group node and
-                    // constituents.
-                    addLinks.push(this.graph.adapter.newLink(newKey, node, {
-                        grouping: true
-                    }));
-                }, this));
-
-                _.each(links, _.bind(function (link) {
-                    var source = link.getTransient("source"),
-                        target = link.getTransient("target");
-
-                    if (!nodeSet.has(source)) {
-                        addLinks.push(this.graph.adapter.newLink(newKey, source));
-                    }
-
-                    if (!nodeSet.has(link.getTransient("target"))) {
-                        addLinks.push(this.graph.adapter.newLink(newKey, target));
-                    }
-                }, this));
-
-                return $.when.apply($, addLinks);
-            }, this)).then(_.bind(function () {
-                var mongoRecs = _.map(nodeSet.items(), function (key) {
-                    return {
-                        _id: {
-                            $oid: key
-                        }
-                    };
-                });
-
-                this.graph.adapter.findNodeByKey(newKey)
-                    .then(_.bind(function (groupNode) {
-                        return this.graph.addNode(groupNode)
-                            .then(_.bind(function () {
-                                this.model.add(groupNode.key());
-                            }, this));
-                    }, this))
-                    .then(_.bind(function () {
-                        var children = _.map(mongoRecs, this.graph.adapter.getMutator, this.graph.adapter);
-                        _.each(children, _.bind(function (child) {
-                            child.setData("deleted", true);
-                            this.hideNode(child);
-                        }, this));
-                    }, this));
-            }, this));
-        },
-
-        ungroupNode: function (node) {
-            this.graph.adapter.findLinks({
-                source: node.key(),
-                grouping: true
-            }).then(_.bind(function (links) {
-                this.hideNode(node);
-                this.graph.adapter.destroyNode(node.key());
-
-                _.each(links, _.bind(function (link) {
-                    this.graph.adapter.findNodeByKey(link.getTransient("target"))
-                        .then(_.bind(function (child) {
-                            child.clearData("deleted");
-                            this.graph.adapter.once("cleared:" + child.key(), _.bind(function () {
-                                this.model.add(child.key());
-                                this.graph.addNode(child);
-                            }, this));
-                        }, this));
-                }, this));
-            }, this));
-        },
-
-        render: function () {
-            var focused,
-                renderTemplate;
-
-            renderTemplate = _.bind(function (node) {
-                this.$el.html(clique.template.selectionInfo({
-                    node: node,
-                    degree: node ? this.graph.degree(node.key()) : -1,
-                    selectionSize: this.model.size()
-                }));
-
-                this.$("a.prev")
-                    .on("click", _.bind(function () {
-                        this.model.focusLeft();
-                    }, this));
-
-                this.$("a.next")
-                    .on("click", _.bind(function () {
-                        this.model.focusRight();
-                    }, this));
-
-                this.$("button.remove").on("click", _.bind(function () {
-                    this.graph.adapter.findNodeByKey(this.model.focused())
-                        .then(_.bind(this.hideNode, this));
-                }, this));
-
-                this.$("button.remove-sel").on("click", _.bind(function () {
-                    _.each(this.model.items(), _.bind(function (key) {
-                        this.graph.adapter.findNodeByKey(key)
-                            .then(_.bind(this.hideNode, this));
-                    }, this));
-                }, this));
-
-                this.$("button.delete").on("click", _.bind(function () {
-                    this.graph.adapter.findNodeByKey(this.model.focused())
-                        .then(_.bind(function (node) {
-                            this.deleteNode(node, !node.getData("deleted"));
-                        }, this));
-                }, this));
-
-                this.$("button.delete-sel").on("click", _.bind(function () {
-                    _.each(this.model.items(), _.bind(function (key) {
-                        this.graph.adapter.findNodeByKey(key)
-                            .then(_.bind(this.deleteNode, this, _, true));
-                    }, this));
-                }, this));
-
-                this.$("button.expand").on("click", _.bind(function () {
-                    this.graph.adapter.findNodeByKey(this.model.focused())
-                        .then(_.bind(this.expandNode, this));
-                }, this));
-
-                this.$("button.expand-sel").on("click", _.bind(function () {
-                    _.each(this.model.items(), _.bind(function (key) {
-                        this.graph.adapter.findNodeByKey(key)
-                            .then(_.bind(this.expandNode, this));
-                    }, this));
-                }, this));
-
-                this.$("button.collapser").on("click", _.bind(function () {
-                    this.collapseNode(this.model.focused());
-                }, this));
-
-                this.$("button.collapser-sel").on("click", _.bind(function () {
-                    _.each(this.model.items(), function (key) {
-                        this.collapseNode(key);
-                    }, this);
-                }, this));
-
-                this.$("button.ungroup").on("click", _.bind(function () {
-                    this.graph.adapter.findNodeByKey(this.model.focused())
-                        .then(_.bind(this.ungroupNode, this));
-                }, this));
-
-                this.$("button.group-sel").on("click", _.bind(function () {
-                    this.groupNodes(this.model.items());
-                }, this));
-            }, this);
-
-            focused = this.model.focused();
-
-            if (!focused) {
-                renderTemplate(focused);
-            } else {
-                this.graph.adapter.findNodeByKey(focused)
-                    .then(renderTemplate);
-            }
-        }
-    });
-}(window.clique, window.Backbone, window._));

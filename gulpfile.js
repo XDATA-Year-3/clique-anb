@@ -47,10 +47,10 @@ gulp.task("jade-templates", function () {
             client: true
         }))
         .pipe(job({
-            namespace: "anb.template"
+            namespace: "template"
         }))
         .pipe(concat("templates.js"))
-        .pipe(gulp.dest("./build/jade"));
+        .pipe(gulp.dest("./build/site"));
 });
 
 gulp.task("stylus", function () {
@@ -72,6 +72,24 @@ gulp.task("uglify-index", function () {
         .pipe(dest())
         .pipe(uglify())
         .pipe(rename("index.min.js"))
+        .pipe(dest());
+});
+
+gulp.task("uglify-templates", function () {
+    "use strict";
+
+    var dest = _.bind(gulp.dest, gulp, "build/site");
+
+    gulp.src("src/js/LinkInfo.js")
+        .pipe(dest())
+        .pipe(uglify())
+        .pipe(rename("LinkInfo.min.js"))
+        .pipe(dest());
+
+    gulp.src("src/js/SelectionInfo.js")
+        .pipe(dest())
+        .pipe(uglify())
+        .pipe(rename("SelectionInfo.min.js"))
         .pipe(dest());
 });
 
@@ -113,7 +131,8 @@ gulp.task("clean", function () {
 });
 
 gulp.task("uglify", [
-    "uglify-index"
+    "uglify-index",
+    "uglify-templates"
 ]);
 
 gulp.task("bower", function () {
@@ -127,6 +146,7 @@ gulp.task("default", [
     "lint",
     "style",
     "stylus",
+    "jade-templates",
     "uglify",
     "jade",
     "assets",
