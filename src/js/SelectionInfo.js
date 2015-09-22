@@ -239,6 +239,43 @@
                     }, this);
                 }, this));
 
+                this.$("button.centrality").on("click", _.bind(function () {
+                    var graph = this.graph,
+                        subgraph = [];
+
+                    // Convert graph connectivity into Clique format.
+                    _.each(graph.get("nodes"), function (node) {
+                        subgraph.push({
+                            _id: {
+                                $oid: node.key
+                            },
+                            type: "node"
+                        });
+                    });
+
+                    _.each(graph.get("links"), function (link) {
+                        subgraph.push({
+                            _id: {
+                                $oid: link.key
+                            },
+                            type: "link",
+                            source: {
+                                $oid: link.source.key
+                            },
+                            target: {
+                                $oid: link.target.key
+                            }
+                        });
+                    });
+
+                    $.getJSON("assets/tangelo/romanesco/centrality", {
+                        node: this.model.focused(),
+                        graph: JSON.stringify(subgraph)
+                    }).then(function (result) {
+                        window.alert("Centrality: " + result);
+                    });
+                }, this));
+
                 this.$("button.ungroup").on("click", _.bind(function () {
                     this.graph.adapter.findNodeByKey(this.model.focused())
                         .then(_.bind(this.ungroupNode, this));
