@@ -679,7 +679,9 @@ $(function () {
 
         graphOps = new app.view.GraphOps({
             model: graph,
-            el: "#graphops"
+            el: "#graphops",
+            database: cfg.database,
+            collection: cfg.collection
         });
         graphOps.render();
 
