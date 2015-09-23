@@ -5,7 +5,7 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
 
-def vertices(m, id="", op=None, key=None, value=None):
+def vertices(m, id="", op=None, key=None, value=None, **kwargs):
     if id != "":
         # Return the requested vertex
         vertex = m.find_one({"_id": ObjectId(id)})
@@ -37,7 +37,7 @@ def vertices(m, id="", op=None, key=None, value=None):
         return response
 
 
-def edges(m, id="", key=None, value=None):
+def edges(m, id="", key=None, value=None, **kwargs):
     def convert(mongoEdge):
         edge = {k: str(v) if isinstance(v, ObjectId) else v for k, v in mongoEdge.get("data", {}).iteritems()}
         edge["_id"] = str(mongoEdge["_id"])
