@@ -22,6 +22,7 @@ head
 
     script(src="plugin/mongo/mongo.js")
 
+    script(src="GraphOps.js")
     script(src="index.js")
 
 body
@@ -108,6 +109,8 @@ body
             .row
                 .col-md-12
                     label #[input(type="checkbox")#textmode] Display text labels
+                .col-md-12
+                    #graphops
 
     #contextmenu.dropdown.clearfix(style="position: absolute; display: none")
         ul.dropdown-menu(role="menu" ara-labelledby="dropdownMenu" style="display: block; position: static; margin-bottom: 5px")

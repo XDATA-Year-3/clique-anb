@@ -150,6 +150,7 @@ $(function () {
             ungroup,
             info,
             linkInfo,
+            graphOps,
             colormap;
 
         cfg = _cfg;
@@ -675,6 +676,12 @@ $(function () {
             graph: graph
         });
         linkInfo.render();
+
+        graphOps = new app.view.GraphOps({
+            model: graph,
+            el: "#graphops"
+        });
+        graphOps.render();
 
         $("#textmode").on("click", function () {
             view.toggleLabels();
