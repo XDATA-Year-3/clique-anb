@@ -29,9 +29,10 @@ def vertices(m, id="", op=None, key=None, value=None, **kwargs):
             result.update({k: v for k, v in rec.get("data", {}).iteritems()})
             return result
 
-        vertices = m.find({"type": "node"})
+        vertices = map(process, m.find({"type": "node"}))
         response = {"version": "*.*",
-                    "results": map(process, vertices),
+                    "results": vertices,
+                    "totalSize": len(vertices),
                     "queryTime": 0.0}
 
         return response
@@ -52,6 +53,7 @@ def edges(m, id="", key=None, value=None, **kwargs):
         results = map(convert, m.find({"type": "link"}))
         return {"version": "*.*",
                 "results": results,
+                "totalSize": len(results),
                 "queryTime": 0.0}
 
     tangelo.http_status(501)
