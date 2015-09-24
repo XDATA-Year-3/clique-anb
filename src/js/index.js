@@ -154,12 +154,11 @@ $(function () {
         cfg = _cfg;
 
         window.graph = graph = new clique.Graph({
-            adapter: tangelo.getPlugin("mongo").Mongo,
-            options: {
+            adapter: tangelo.getPlugin("mongo").Mongo({
                 host: cfg.host || "localhost",
                 database: cfg.database,
                 collection: cfg.collection
-            }
+            })
         });
 
         $.getJSON("assets/tangelo/anb/get_filenames", {
