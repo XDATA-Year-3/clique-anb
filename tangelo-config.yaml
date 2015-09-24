@@ -1,4 +1,4 @@
 plugins:
     - name: mongo
-      path: src/tangelo/mongo
+      path: bower_components/clique/tangelo/mongo
     - name: tangelo
