@@ -1,12 +1,10 @@
 /*jshint node: true */
 
 var gulp = require("gulp"),
-    concat = require("gulp-concat"),
     gutil = require("gulp-util"),
     jade = require("gulp-jade"),
     jscs = require("gulp-jscs"),
     stylishJscs = require("gulp-jscs-stylish"),
-    job = require("gulp-job"),
     jshint = require("gulp-jshint"),
     plumber = require("gulp-plumber"),
     rename = require("gulp-rename"),
@@ -39,20 +37,6 @@ gulp.task("jade", function () {
         .pipe(gulp.dest("./build/site"));
 });
 
-gulp.task("jade-templates", function () {
-    "use strict";
-
-    return gulp.src("src/jade/template/**/*.jade")
-        .pipe(jade({
-            client: true
-        }))
-        .pipe(job({
-            namespace: "template"
-        }))
-        .pipe(concat("templates.js"))
-        .pipe(gulp.dest("./build/site"));
-});
-
 gulp.task("stylus", function () {
     "use strict";
 
@@ -63,7 +47,7 @@ gulp.task("stylus", function () {
         .pipe(gulp.dest("./build/site"));
 });
 
-gulp.task("uglify-index", function () {
+gulp.task("uglify", function () {
     "use strict";
 
     var dest = _.bind(gulp.dest, gulp, "build/site");
@@ -72,24 +56,6 @@ gulp.task("uglify-index", function () {
         .pipe(dest())
         .pipe(uglify())
         .pipe(rename("index.min.js"))
-        .pipe(dest());
-});
-
-gulp.task("uglify-templates", function () {
-    "use strict";
-
-    var dest = _.bind(gulp.dest, gulp, "build/site");
-
-    gulp.src("src/js/LinkInfo.js")
-        .pipe(dest())
-        .pipe(uglify())
-        .pipe(rename("LinkInfo.min.js"))
-        .pipe(dest());
-
-    gulp.src("src/js/SelectionInfo.js")
-        .pipe(dest())
-        .pipe(uglify())
-        .pipe(rename("SelectionInfo.min.js"))
         .pipe(dest());
 });
 
@@ -130,11 +96,6 @@ gulp.task("clean", function () {
         .pipe(rimraf());
 });
 
-gulp.task("uglify", [
-    "uglify-index",
-    "uglify-templates"
-]);
-
 gulp.task("bower", function () {
     "use strict";
 
@@ -146,7 +107,6 @@ gulp.task("default", [
     "lint",
     "style",
     "stylus",
-    "jade-templates",
     "uglify",
     "jade",
     "assets",
