@@ -398,83 +398,112 @@ $(function () {
                     color: "blue",
                     icon: "paperclip",
                     callback: function (selection) {
-                        var nodeSet,
-                            nodes,
-                            newKey;
+                        var nodes,
+                            links,
+                            powerNode,
+                            reqs;
 
-                        nodes = _.map(selection, this.graph.adapter.getMutator, this.graph.adapter);
+                        // Extract keys from node selection.
+                        nodes = _.map(selection, function (n) {
+                            return n.key();
+                        });
+                        // nodes = _.invoke(selection, "key");
 
-                        // Construct a new node with special properties.
-                        this.graph.adapter.newNode({
-                            grouped: true
-                        }).then(_.bind(function (mongoRec) {
-                            newKey = mongoRec._id.$oid;
+                        // Get all links going to or from nodes in the
+                        // selection.
+                        //
+                        // Start by issuing ajax calls to look for links with
+                        // each node as source and target.
+                        reqs = _.flatten(_.map(nodes, _.bind(function (n) {
+                            return [
+                                this.graph.adapter.findLinks({
+                                    source: n
+                                }),
+                                this.graph.adapter.findLinks({
+                                    target: n
+                                })
+                            ];
+                        }, this)));
 
-                            // Find all links to/from the nodes in the group.
-                            return $.when.apply($, _.flatten(_.map(nodes, _.bind(function (node) {
-                                return [
-                                    this.graph.adapter.findLinks({
-                                        source: node
-                                    }),
-                                    this.graph.adapter.findLinks({
-                                        target: node
-                                    })
-                                ];
-                            }, this)), true));
-                        }, this)).then(_.bind(function () {
-                            var links,
-                                addLinks = [];
-
-                            links = Array.prototype.concat.apply([], Array.prototype.slice.call(arguments));
-
-                            nodeSet = new clique.util.Set();
-                            _.each(nodes, _.bind(function (node) {
-                                nodeSet.add(node);
-
-                                // Add an "inclusion" link between the group node and
-                                // constituents.
-                                addLinks.push(this.graph.adapter.newLink(newKey, node, {
-                                    grouping: true
-                                }));
-                            }, this));
-
-                            _.each(links, _.bind(function (link) {
-                                var source = link.getTransient("source"),
-                                    target = link.getTransient("target");
-
-                                if (!nodeSet.has(source)) {
-                                    addLinks.push(this.graph.adapter.newLink(newKey, source));
-                                }
-
-                                if (!nodeSet.has(link.getTransient("target"))) {
-                                    addLinks.push(this.graph.adapter.newLink(newKey, target));
-                                }
-                            }, this));
-
-                            return $.when.apply($, addLinks);
-                        }, this)).then(_.bind(function () {
-                            var mongoRecs = _.map(nodeSet.items(), function (key) {
-                                return {
-                                    _id: {
-                                        $oid: key
-                                    }
-                                };
+                        // Issue a jquery when call to wait for all the requests
+                        // to finish.
+                        $.when.apply($, reqs).then(_.bind(function () {
+                            // Collect the links from the function arguments,
+                            // omitting the "shadow" halves of bidirectional
+                            // links.
+                            links = _.filter(Array.prototype.concat.apply([], _.toArray(arguments)), function (l) {
+                                return !(l.getData("bidir") && l.getData("reference"));
                             });
 
-                            this.graph.adapter.findNodeByKey(newKey)
-                                .then(_.bind(function (groupNode) {
-                                    return this.graph.addNode(groupNode)
-                                        .then(_.bind(function () {
-                                            this.model.add(groupNode.key());
-                                        }, this));
-                                }, this))
-                                .then(_.bind(function () {
-                                    var children = _.map(mongoRecs, this.graph.adapter.getMutator, this.graph.adapter);
-                                    _.each(children, _.bind(function (child) {
-                                        child.setData("deleted", true);
-                                        this.hideNode(child);
-                                    }, this));
-                                }, this));
+                            // Create a new node that will serve as the power
+                            // node.
+                            return this.graph.adapter.newNode({
+                                grouped: true
+                            });
+                        }, this)).then(_.bind(function (_powerNode) {
+                            var inclusionReqs,
+                                connectivityReqs,
+                                reqs,
+                                key;
+
+                            powerNode = _powerNode;
+                            key = powerNode.key();
+
+                            // Create inclusion links for new power node.
+                            inclusionReqs = _.map(nodes, _.bind(function (n) {
+                                return this.graph.adapter.newLink(key, n, {
+                                    grouping: true
+                                });
+                            }, this));
+
+                            // Create connectivity links for new power node.
+                            connectivityReqs = _.map(links, _.bind(function (link) {
+                                var data = link.getAllData(),
+                                    obj = {},
+                                    source,
+                                    target;
+
+                                _.each(data, function (pair) {
+                                    obj[pair[0]] = pair[1];
+                                });
+
+                                source = _.contains(nodes, link.source()) ? key : link.source();
+                                target = _.contains(nodes, link.target()) ? key : link.target();
+
+                                if (source !== key || target !== key) {
+                                    return this.graph.adapter.newLink(source, target, obj);
+                                }
+                            }, this));
+
+                            reqs = inclusionReqs.concat(_.compact(connectivityReqs));
+
+                            return $.when.apply($, reqs);
+                        }, this)).then(_.bind(function () {
+                            var newLinks = _.toArray(arguments);
+
+                            // Fill in any necessary "shadow" halves of
+                            // bidirectional links.
+                            return _.map(newLinks, _.bind(function (link) {
+                                var reqs = [];
+
+                                if (link.getData("bidir")) {
+                                    reqs.push(this.graph.adapter.newLink(link.target(), link.source(), {
+                                        bidir: true,
+                                        reference: link.key()
+                                    }));
+                                }
+
+                                return reqs;
+                            }, this));
+                        }, this)).then(_.bind(function () {
+                            // Delete the original selection's nodes.
+                            _.each(selection, clique.view.SelectionInfo.deleteNode, this);
+                        }, this)).then(_.bind(function () {
+                            // Add the new node to the graph.
+                            this.graph.addNeighborhood({
+                                center: powerNode,
+                                radius: 1
+                            });
                         }, this));
                     }
                 }
