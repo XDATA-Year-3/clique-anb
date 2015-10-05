@@ -316,23 +316,61 @@ $(function () {
                     color: "blue",
                     icon: "scissors",
                     callback: function (node) {
-                        this.graph.adapter.findLinks({
-                            source: node.key(),
-                            grouping: true
-                        }).then(_.bind(function (links) {
-                            this.hideNode(node);
-                            this.graph.adapter.destroyNode(node.key());
+                        var fromLinks,
+                            toLinks,
+                            restoredNodes;
 
-                            _.each(links, _.bind(function (link) {
-                                this.graph.adapter.findNodeByKey(link.getTransient("target"))
-                                    .then(_.bind(function (child) {
-                                        child.clearData("deleted");
-                                        this.graph.adapter.once("cleared:" + child.key(), _.bind(function () {
-                                            this.model.add(child.key());
-                                            this.graph.addNode(child);
-                                        }, this));
-                                    }, this));
+                        // Get all links involving the group node.
+                        fromLinks = this.graph.adapter.findLinks({
+                            source: node.key()
+                        });
+
+                        toLinks = this.graph.adapter.findLinks({
+                            target: node.key()
+                        });
+
+                        $.when(fromLinks, toLinks).then(_.bind(function (from, to) {
+                            var inclusion,
+                                reqs;
+
+                            // Find the "inclusion" links originating from the
+                            // group node.
+                            inclusion = _.filter(from, function (link) {
+                                return link.getData("grouping");
+                            });
+
+                            // Store the node keys associated to these links.
+                            restoredNodes = _.invoke(inclusion, "target");
+
+                            // Delete all the links.
+                            reqs = _.map(from.concat(to), _.bind(function (link) {
+                                this.graph.adapter.destroyLink(link.key());
                             }, this));
+
+                            return $.apply($, reqs);
+                        }, this)).then(_.bind(function () {
+                            // Remove the node from the graph.
+                            this.graph.removeNode(node);
+
+                            // Delete the node itself.
+                            return this.graph.adapter.destroyNode(node.key());
+                        }, this)).then(_.bind(function () {
+                            var reqs;
+
+                            // Get mutators for the restored nodes.
+                            reqs = _.map(restoredNodes, this.graph.adapter.findNodeByKey, this.graph.adapter);
+
+                            return $.when.apply($, reqs);
+                        }, this)).then(_.bind(function () {
+                            var nodes = _.toArray(arguments);
+
+                            // Clear the deleted flag from the nodes.
+                            _.each(nodes, function (node) {
+                                node.clearData("deleted");
+                            }, this);
+
+                            // Add the nodes to the graph.
+                            this.graph.addNodes(nodes);
                         }, this));
                     },
                     show: function (node) {
@@ -500,10 +538,7 @@ $(function () {
                             _.each(selection, clique.view.SelectionInfo.deleteNode, this);
                         }, this)).then(_.bind(function () {
                             // Add the new node to the graph.
-                            this.graph.addNeighborhood({
-                                center: powerNode,
-                                radius: 1
-                            });
+                            this.graph.addNode(powerNode);
                         }, this));
                     }
                 }
