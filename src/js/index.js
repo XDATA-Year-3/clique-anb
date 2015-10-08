@@ -555,6 +555,10 @@ $(function () {
             graph: graph
         });
         linkInfo.render();
+
+        $("#textmode").on("click", function () {
+            view.toggleLabels();
+        });
     };
 
     $.get("assets/query.pegjs", "text")
