@@ -559,12 +559,40 @@ $(function () {
         $("#textmode").on("click", function () {
             view.toggleLabels();
         });
-    };
 
-    $.get("assets/query.pegjs", "text")
-        .then(function (src) {
+        $.get("assets/query.pegjs", "text").then(function (src) {
             parser = PEG.buildParser(src);
+        }).then(function () {
+            // If there are initialization parameters, pull in the requested
+            // neighborhood.
+            var args = tangelo.queryArguments(),
+                spec,
+                query,
+                radius = 1;
+
+            if (_.size(args) > 0) {
+                if (_.has(args, "radius")) {
+                    radius = Number(args.radius);
+                    delete args.radius;
+                }
+
+                spec = _.map(args, function (value, key) {
+                    return key + " == \"" + value + "\"";
+                }).join(" & ");
+
+                query = parser.parse(spec);
+
+                graph.adapter.findNodes(query).then(function (nodes) {
+                    _.each(nodes, function (node) {
+                        graph.addNeighborhood({
+                            center: node,
+                            radius: radius
+                        });
+                    });
+                });
+            }
         });
+    };
 
     $.getJSON("anb.json")
         .then(launch, _.bind(launch, {}));
