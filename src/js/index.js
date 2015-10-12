@@ -272,6 +272,9 @@ $(function () {
         window.view = view = new clique.view.Cola({
             model: graph,
             el: "#content",
+            label: function (d) {
+                return d.data.label;
+            },
             fill: function (d) {
                 return colormap((d.data || {}).type || "no type");
             },
@@ -552,6 +555,10 @@ $(function () {
             graph: graph
         });
         linkInfo.render();
+
+        $("#textmode").on("click", function () {
+            view.toggleLabels();
+        });
     };
 
     $.get("assets/query.pegjs", "text")
