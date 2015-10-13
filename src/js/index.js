@@ -292,8 +292,14 @@ $(function () {
         });
 
         view.on("render", function () {
-            var $cm = $("#contextmenu"),
+            var $cm,
                 getMenuPosition;
+
+            if (!cfg.intentService) {
+                return;
+            }
+
+            $cm = $("#contextmenu");
 
             // This returns a position near the mouse pointer, unless it is too
             // near the right or bottom edge of the window, in which case it
@@ -318,34 +324,48 @@ $(function () {
             d3.select(view.el)
                 .selectAll("g.node")
                 .on("contextmenu", function (d) {
-                    var cm = d3.select("#contextmenu");
+                    var left,
+                        top;
 
-                    cm.select("ul")
-                        .selectAll("li")
-                        .remove();
+                    left = getMenuPosition(d3.event.clientX, "width", "scrollLeft");
+                    top = getMenuPosition(d3.event.clientY, "height", "scrollTop");
 
-                    cm.select("ul")
-                        .selectAll("li")
-                        .data(_.values(d.data))
-                        .enter()
-                        .append("li")
-                        .append("a")
-                        .attr("tabindex", -1)
-                        .attr("href", "#")
-                        .text(function (d) {
-                            return d;
-                        })
-                        .on("click", function () {
-                            window.open("http://twitter.com", "_blank");
+                    $.getJSON(cfg.intentService, {
+                        user: d.data.label
+                    }).then(function (apps) {
+                        var cm = d3.select("#contextmenu");
 
-                            $cm.hide();
+                        apps = _.map(apps, function (data, app) {
+                            return _.extend(data, {name: app});
                         });
 
-                    $cm.show()
-                        .css({
-                            left: getMenuPosition(d3.event.clientX, "width", "scrollLeft"),
-                            top: getMenuPosition(d3.event.clientY, "height", "scrollTop")
-                        });
+                        cm.select("ul")
+                            .selectAll("li")
+                            .remove();
+
+                        cm.select("ul")
+                            .selectAll("li")
+                            .data(apps)
+                            .enter()
+                            .append("li")
+                            .append("a")
+                            .attr("tabindex", -1)
+                            .attr("href", "#")
+                            .text(function (d) {
+                                return d.name;
+                            })
+                            .on("click", function (d) {
+                                window.open(d.user, "_blank");
+
+                                $cm.hide();
+                            });
+
+                        $cm.show()
+                            .css({
+                                left: left,
+                                top: top
+                            });
+                    });
                 });
 
             // Clicking anywhere else will close any open context menu.
