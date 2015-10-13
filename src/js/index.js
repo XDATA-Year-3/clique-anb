@@ -396,9 +396,15 @@ $(function () {
                     });
                 });
 
-            // Clicking anywhere else will close any open context menu.
+            // Clicking anywhere else will close any open context menu.  Use the
+            // mouseup event (bound to only the left mouse button) to ensure the
+            // menu disappears even on a selection event (which does not
+            // generate a click event).
             d3.select(document.body)
-                .on("click.menuhide", function () {
+                .on("mouseup.menuhide", function () {
+                    if (d3.event.which !== 1) {
+                        return;
+                    }
                     $cm.hide();
                 });
         });
