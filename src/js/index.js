@@ -291,6 +291,70 @@ $(function () {
             rootColor: "gold"
         });
 
+        view.on("render", function () {
+            var $cm = $("#contextmenu"),
+                getMenuPosition;
+
+            // This returns a position near the mouse pointer, unless it is too
+            // near the right or bottom edge of the window, in which case it
+            // returns a position far enough inside the window to display the
+            // menu in question.
+            getMenuPosition = function (mouse, direction, scrollDir) {
+                var win = $(window)[direction](),
+                    scroll = $(window)[scrollDir](),
+                    menu = $("#contextmenu")[direction](),
+                    position = mouse + scroll;
+
+                if (mouse + menu > win && menu < mouse) {
+                    position -= menu;
+                }
+
+                return position;
+            };
+
+            // Attach a contextmenu action to all the nodes - it populates the
+            // menu element with appropriate data, then shows it at the
+            // appropriate position.
+            d3.select(view.el)
+                .selectAll("g.node")
+                .on("contextmenu", function (d) {
+                    var cm = d3.select("#contextmenu");
+
+                    cm.select("ul")
+                        .selectAll("li")
+                        .remove();
+
+                    cm.select("ul")
+                        .selectAll("li")
+                        .data(_.values(d.data))
+                        .enter()
+                        .append("li")
+                        .append("a")
+                        .attr("tabindex", -1)
+                        .attr("href", "#")
+                        .text(function (d) {
+                            return d;
+                        })
+                        .on("click", function () {
+                            window.open("http://twitter.com", "_blank");
+
+                            $cm.hide();
+                        });
+
+                    $cm.show()
+                        .css({
+                            left: getMenuPosition(d3.event.clientX, "width", "scrollLeft"),
+                            top: getMenuPosition(d3.event.clientY, "height", "scrollTop")
+                        });
+                });
+
+            // Clicking anywhere else will close any open context menu.
+            d3.select(document.body)
+                .on("click.menuhide", function () {
+                    $cm.hide();
+                });
+        });
+
         window.info = info = new clique.view.SelectionInfo({
             model: view.selection,
             el: "#info",
