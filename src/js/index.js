@@ -150,7 +150,6 @@ $(function () {
             ungroup,
             info,
             linkInfo,
-            graphOps,
             colormap;
 
         cfg = _cfg;
@@ -677,13 +676,15 @@ $(function () {
         });
         linkInfo.render();
 
-        graphOps = new app.view.GraphOps({
-            model: graph,
-            el: "#graphops",
-            database: cfg.database,
-            collection: cfg.collection
+        $("button.nodecentrality").on("click", function () {
+            var rexster = window.location.origin + ["", "plugin", "mongo", "rexster", "graphs", cfg.database + "," + cfg.collection].join("/");
+
+            $.getJSON("assets/tangelo/romanesco/degree_centrality/workflow", {
+                sourceGraph: rexster
+            }).then(function (result) {
+                console.log(result);
+            });
         });
-        graphOps.render();
 
         $("#textmode").on("click", function () {
             view.toggleLabels();
