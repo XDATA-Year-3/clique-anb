@@ -147,6 +147,7 @@ $(function () {
     var launch = function (_cfg) {
         var graph,
             view,
+            ungroup,
             info,
             linkInfo,
             colormap;
@@ -291,6 +292,182 @@ $(function () {
             rootColor: "gold"
         });
 
+        view.on("render", function () {
+            var $cm,
+                getMenuPosition;
+
+            if (!cfg.intentService) {
+                return;
+            }
+
+            $cm = $("#contextmenu");
+
+            // This returns a position near the mouse pointer, unless it is too
+            // near the right or bottom edge of the window, in which case it
+            // returns a position far enough inside the window to display the
+            // menu in question.
+            getMenuPosition = function (mouse, direction, scrollDir) {
+                var win = $(window)[direction](),
+                    scroll = $(window)[scrollDir](),
+                    menu = $("#contextmenu")[direction](),
+                    position = mouse + scroll;
+
+                if (mouse + menu > win && menu < mouse) {
+                    position -= menu;
+                }
+
+                return position;
+            };
+
+            // Attach a contextmenu action to all the nodes - it populates the
+            // menu element with appropriate data, then shows it at the
+            // appropriate position.
+            d3.select(view.el)
+                .selectAll("g.node")
+                .on("contextmenu", function (d) {
+                    var cm = d3.select("#contextmenu"),
+                        ul = cm.select("ul"),
+                        node = graph.adapter.getMutator(d.key),
+                        left,
+                        top;
+
+                    left = getMenuPosition(d3.event.clientX, "width", "scrollLeft");
+                    top = getMenuPosition(d3.event.clientY, "height", "scrollTop");
+
+                    cm.select("ul")
+                        .select("li.nodelabel")
+                        .text(d.data.label);
+
+                    ul.select("a.context-hide")
+                        .on("click", _.bind(clique.view.SelectionInfo.hideNode, info, node));
+
+                    ul.select("a.context-ungroup")
+                        .style("display", d.data.grouped ? null : "none")
+                        .on("click", _.bind(ungroup, info, node));
+
+                    ul.select("a.context-expand")
+                        .on("click", _.bind(clique.view.SelectionInfo.expandNode, info, node));
+
+                    ul.select("a.context-collapse")
+                        .on("click", _.bind(clique.view.SelectionInfo.collapseNode, info, node));
+
+                    $.getJSON(cfg.intentService, {
+                        user: d.data.label
+                    }).then(function (apps) {
+                        apps = _.map(apps, function (data, app) {
+                            return _.extend(data, {name: app});
+                        });
+
+                        cm.select("ul")
+                            .selectAll("li.external")
+                            .remove();
+
+                        if (_.size(apps) > 0) {
+                            cm.select("ul")
+                                .append("li")
+                                .classed("external", true)
+                                .classed("dropdown-header", true)
+                                .text("External Applications");
+
+                            cm.select("ul")
+                                .selectAll("li.external")
+                                .data(apps)
+                                .enter()
+                                .append("li")
+                                .classed("external", true)
+                                .append("a")
+                                .attr("tabindex", -1)
+                                .attr("href", "#")
+                                .text(function (d) {
+                                    return d.name;
+                                })
+                                .on("click", function (d) {
+                                    window.open(d.user, "_blank");
+
+                                    $cm.hide();
+                                });
+                        }
+
+                        $cm.show()
+                            .css({
+                                left: left,
+                                top: top
+                            });
+                    });
+                });
+
+            // Clicking anywhere else will close any open context menu.  Use the
+            // mouseup event (bound to only the left mouse button) to ensure the
+            // menu disappears even on a selection event (which does not
+            // generate a click event).
+            d3.select(document.body)
+                .on("mouseup.menuhide", function () {
+                    if (d3.event.which !== 1) {
+                        return;
+                    }
+                    $cm.hide();
+                });
+        });
+
+        ungroup = function (node) {
+            var fromLinks,
+                toLinks,
+                restoredNodes;
+
+            // Get all links involving the group node.
+            fromLinks = this.graph.adapter.findLinks({
+                source: node.key()
+            });
+
+            toLinks = this.graph.adapter.findLinks({
+                target: node.key()
+            });
+
+            $.when(fromLinks, toLinks).then(_.bind(function (from, to) {
+                var inclusion,
+                    reqs;
+
+                // Find the "inclusion" links originating from the
+                // group node.
+                inclusion = _.filter(from, function (link) {
+                    return link.getData("grouping");
+                });
+
+                // Store the node keys associated to these links.
+                restoredNodes = _.invoke(inclusion, "target");
+
+                // Delete all the links.
+                reqs = _.map(from.concat(to), _.bind(function (link) {
+                    this.graph.adapter.destroyLink(link.key());
+                }, this));
+
+                return $.apply($, reqs);
+            }, this)).then(_.bind(function () {
+                // Remove the node from the graph.
+                this.graph.removeNode(node);
+
+                // Delete the node itself.
+                return this.graph.adapter.destroyNode(node.key());
+            }, this)).then(_.bind(function () {
+                var reqs;
+
+                // Get mutators for the restored nodes.
+                reqs = _.map(restoredNodes, this.graph.adapter.findNodeByKey, this.graph.adapter);
+
+                return $.when.apply($, reqs);
+            }, this)).then(_.bind(function () {
+                var nodes = _.toArray(arguments);
+
+                // Clear the deleted flag from the nodes.
+                _.each(nodes, function (node) {
+                    node.clearData("deleted");
+                }, this);
+
+                // Add the nodes to the graph.
+                this.graph.addNodes(nodes);
+            }, this));
+        };
+
         window.info = info = new clique.view.SelectionInfo({
             model: view.selection,
             el: "#info",
@@ -318,64 +495,7 @@ $(function () {
                     label: "Ungroup",
                     color: "blue",
                     icon: "scissors",
-                    callback: function (node) {
-                        var fromLinks,
-                            toLinks,
-                            restoredNodes;
-
-                        // Get all links involving the group node.
-                        fromLinks = this.graph.adapter.findLinks({
-                            source: node.key()
-                        });
-
-                        toLinks = this.graph.adapter.findLinks({
-                            target: node.key()
-                        });
-
-                        $.when(fromLinks, toLinks).then(_.bind(function (from, to) {
-                            var inclusion,
-                                reqs;
-
-                            // Find the "inclusion" links originating from the
-                            // group node.
-                            inclusion = _.filter(from, function (link) {
-                                return link.getData("grouping");
-                            });
-
-                            // Store the node keys associated to these links.
-                            restoredNodes = _.invoke(inclusion, "target");
-
-                            // Delete all the links.
-                            reqs = _.map(from.concat(to), _.bind(function (link) {
-                                this.graph.adapter.destroyLink(link.key());
-                            }, this));
-
-                            return $.apply($, reqs);
-                        }, this)).then(_.bind(function () {
-                            // Remove the node from the graph.
-                            this.graph.removeNode(node);
-
-                            // Delete the node itself.
-                            return this.graph.adapter.destroyNode(node.key());
-                        }, this)).then(_.bind(function () {
-                            var reqs;
-
-                            // Get mutators for the restored nodes.
-                            reqs = _.map(restoredNodes, this.graph.adapter.findNodeByKey, this.graph.adapter);
-
-                            return $.when.apply($, reqs);
-                        }, this)).then(_.bind(function () {
-                            var nodes = _.toArray(arguments);
-
-                            // Clear the deleted flag from the nodes.
-                            _.each(nodes, function (node) {
-                                node.clearData("deleted");
-                            }, this);
-
-                            // Add the nodes to the graph.
-                            this.graph.addNodes(nodes);
-                        }, this));
-                    },
+                    callback: ungroup,
                     show: function (node) {
                         return node.getData("grouped");
                     }

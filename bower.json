@@ -23,6 +23,6 @@
     "pegjs": "~0.9.0",
     "underscore": "~1.8.3",
     "webcola": "~3.1.0",
-    "clique": "b1386950a5d357eeb4e0aba2481250f63c933e7a"
+    "clique": "1a04fca355fc2abcdc8c78af5e6e410f4971e1b3"
   }
 }
