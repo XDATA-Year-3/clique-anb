@@ -4,13 +4,11 @@ import romanesco
 from romanesco.specs import Workflow
 
 
-def run(sourceGraph=None):
-    ANALYSIS_GRAPH = 'http://genii:8182/graphs/graph'
-
+def run(sourceGraph=None, titan=None):
     inputs = {'rexsterInUrl': {'format': 'text',
                                'data': sourceGraph},
               'rexsterOutUrl': {'format': 'text',
-                                'data': ANALYSIS_GRAPH}}
+                                'data': titan}}
 
     wf = Workflow()
 

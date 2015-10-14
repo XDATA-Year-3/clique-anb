@@ -680,7 +680,8 @@ $(function () {
             var rexster = window.location.origin + ["", "plugin", "mongo", "rexster", "graphs", cfg.database + "," + cfg.collection].join("/");
 
             $.getJSON("assets/tangelo/romanesco/degree_centrality/workflow", {
-                sourceGraph: rexster
+                sourceGraph: rexster,
+                titan: cfg.titan
             }).then(function (result) {
                 console.log(result);
             });
