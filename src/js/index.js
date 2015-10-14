@@ -515,6 +515,47 @@ $(function () {
                     callback: function (node) {
                         _.bind(clique.view.SelectionInfo.collapseNode, this)(node);
                     }
+                },
+                {
+                    label: "Centrality",
+                    color: "blue",
+                    icon: "screenshot",
+                    callback: function () {
+                        var graph = this.graph,
+                        subgraph = [];
+
+                        // Convert graph connectivity into Clique format.
+                        _.each(graph.get("nodes"), function (node) {
+                            subgraph.push({
+                                _id: {
+                                    $oid: node.key
+                                },
+                                type: "node"
+                            });
+                        });
+
+                        _.each(graph.get("links"), function (link) {
+                            subgraph.push({
+                                _id: {
+                                    $oid: link.key
+                                },
+                                type: "link",
+                                source: {
+                                    $oid: link.source.key
+                                },
+                                target: {
+                                    $oid: link.target.key
+                                }
+                            });
+                        });
+
+                        $.getJSON("assets/tangelo/romanesco/centrality", {
+                            node: this.model.focused(),
+                            graph: JSON.stringify(subgraph)
+                        }).then(function (result) {
+                            window.alert("Centrality: " + result);
+                        });
+                    }
                 }
             ],
             selectionButtons: [
