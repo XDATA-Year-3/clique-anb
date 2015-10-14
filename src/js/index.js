@@ -676,16 +676,18 @@ $(function () {
         });
         linkInfo.render();
 
-        $("button.nodecentrality").on("click", function () {
-            var rexster = window.location.origin + ["", "plugin", "mongo", "rexster", "graphs", cfg.database + "," + cfg.collection].join("/");
+        if (cfg.titan) {
+            $("button.nodecentrality").on("click", function () {
+                var rexster = window.location.origin + ["", "plugin", "mongo", "rexster", "graphs", cfg.database + "," + cfg.collection].join("/");
 
-            $.getJSON("assets/tangelo/romanesco/degree_centrality/workflow", {
-                sourceGraph: rexster,
-                titan: cfg.titan
-            }).then(function (result) {
-                console.log(result);
+                $.getJSON("assets/tangelo/romanesco/degree_centrality/workflow", {
+                    sourceGraph: rexster,
+                    titan: cfg.titan
+                }).then(function (result) {
+                    console.log(result);
+                });
             });
-        });
+        }
 
         $("#textmode").on("click", function () {
             view.toggleLabels();
