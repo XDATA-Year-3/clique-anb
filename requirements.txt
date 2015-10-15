@@ -1,3 +1,5 @@
 tangelo==0.9.0
 pymongo==3.0.3
-git+https://github.com/Kitware/romanesco@6fd611f41137d70cf43e50779a29bdbf06d05338
+bulbs==0.3.29.post20140417
+requests==2.7.0
+git+https://github.com/Kitware/romanesco@4a20f1cb843f2b3a334871a1045272f1821b361a

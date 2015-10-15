@@ -296,10 +296,6 @@ $(function () {
             var $cm,
                 getMenuPosition;
 
-            if (!cfg.intentService) {
-                return;
-            }
-
             $cm = $("#contextmenu");
 
             // This returns a position near the mouse pointer, unless it is too
@@ -329,6 +325,7 @@ $(function () {
                         ul = cm.select("ul"),
                         node = graph.adapter.getMutator(d.key),
                         left,
+                        def,
                         top;
 
                     left = getMenuPosition(d3.event.clientX, "width", "scrollLeft");
@@ -351,9 +348,16 @@ $(function () {
                     ul.select("a.context-collapse")
                         .on("click", _.bind(clique.view.SelectionInfo.collapseNode, info, node));
 
-                    $.getJSON(cfg.intentService, {
-                        user: d.data.label
-                    }).then(function (apps) {
+                    if (cfg.intentService) {
+                        def = $.getJSON(cfg.intentService, {
+                            user: d.data.label
+                        });
+                    } else {
+                        def = $.Deferred();
+                        def.resolve({});
+                    }
+
+                    def.then(function (apps) {
                         apps = _.map(apps, function (data, app) {
                             return _.extend(data, {name: app});
                         });
@@ -515,6 +519,48 @@ $(function () {
                     callback: function (node) {
                         _.bind(clique.view.SelectionInfo.collapseNode, this)(node);
                     }
+                },
+                {
+                    label: "Centrality",
+                    color: "blue",
+                    icon: "screenshot",
+                    show: _.isUndefined(cfg.nodeCentrality) ? true : cfg.nodeCentrality,
+                    callback: function () {
+                        var graph = this.graph,
+                        subgraph = [];
+
+                        // Convert graph connectivity into Clique format.
+                        _.each(graph.get("nodes"), function (node) {
+                            subgraph.push({
+                                _id: {
+                                    $oid: node.key
+                                },
+                                type: "node"
+                            });
+                        });
+
+                        _.each(graph.get("links"), function (link) {
+                            subgraph.push({
+                                _id: {
+                                    $oid: link.key
+                                },
+                                type: "link",
+                                source: {
+                                    $oid: link.source.key
+                                },
+                                target: {
+                                    $oid: link.target.key
+                                }
+                            });
+                        });
+
+                        $.getJSON("assets/tangelo/romanesco/centrality", {
+                            node: this.model.focused(),
+                            graph: JSON.stringify(subgraph)
+                        }).then(function (result) {
+                            window.alert("Centrality: " + result);
+                        });
+                    }
                 }
             ],
             selectionButtons: [
@@ -675,6 +721,22 @@ $(function () {
             graph: graph
         });
         linkInfo.render();
+
+        if (cfg.titan && cfg.graphCentrality) {
+            $("button.nodecentrality").on("click", function () {
+                var rexster = window.location.origin + ["", "plugin", "mongo", "rexster", "graphs", cfg.database + "," + cfg.collection].join("/");
+
+                $.getJSON("assets/tangelo/romanesco/degree_centrality/workflow", {
+                    sourceGraph: rexster,
+                    titan: cfg.titan
+                }).then(function (result) {
+                    console.log(result);
+                });
+            });
+        } else {
+            d3.selectAll(".nodecentrality")
+                .remove();
+        }
 
         $("#textmode").on("click", function () {
             view.toggleLabels();
