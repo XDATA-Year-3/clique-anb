@@ -296,10 +296,6 @@ $(function () {
             var $cm,
                 getMenuPosition;
 
-            if (!cfg.intentService) {
-                return;
-            }
-
             $cm = $("#contextmenu");
 
             // This returns a position near the mouse pointer, unless it is too
@@ -329,6 +325,7 @@ $(function () {
                         ul = cm.select("ul"),
                         node = graph.adapter.getMutator(d.key),
                         left,
+                        def,
                         top;
 
                     left = getMenuPosition(d3.event.clientX, "width", "scrollLeft");
@@ -351,9 +348,16 @@ $(function () {
                     ul.select("a.context-collapse")
                         .on("click", _.bind(clique.view.SelectionInfo.collapseNode, info, node));
 
-                    $.getJSON(cfg.intentService, {
-                        user: d.data.label
-                    }).then(function (apps) {
+                    if (cfg.intentService) {
+                        def = $.getJSON(cfg.intentService, {
+                            user: d.data.label
+                        });
+                    } else {
+                        def = $.Deferred();
+                        def.resolve({});
+                    }
+
+                    def.then(function (apps) {
                         apps = _.map(apps, function (data, app) {
                             return _.extend(data, {name: app});
                         });
