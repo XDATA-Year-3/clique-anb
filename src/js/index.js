@@ -520,6 +520,7 @@ $(function () {
                     label: "Centrality",
                     color: "blue",
                     icon: "screenshot",
+                    show: _.isUndefined(cfg.nodeCentrality) ? true : cfg.nodeCentrality,
                     callback: function () {
                         var graph = this.graph,
                         subgraph = [];
