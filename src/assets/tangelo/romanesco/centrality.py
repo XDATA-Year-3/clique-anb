@@ -29,9 +29,6 @@ def run(node=None, graph=None):
     """Computes the centrality of ``node`` (given by key) within the subgraph
     represented by ``graph`` (which is in Clique-Mongo format."""
 
-    tangelo.log_debug(type(node))
-    tangelo.log_debug(type(graph))
-
     output = romanesco.run(betweenness_centrality, inputs={'G': {'format': 'clique.json',
                                                                  'data': graph},
                                                            'node': {'format': 'text',
