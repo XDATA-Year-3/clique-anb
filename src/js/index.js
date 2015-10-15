@@ -722,7 +722,7 @@ $(function () {
         });
         linkInfo.render();
 
-        if (cfg.titan) {
+        if (cfg.titan && cfg.graphCentrality) {
             $("button.nodecentrality").on("click", function () {
                 var rexster = window.location.origin + ["", "plugin", "mongo", "rexster", "graphs", cfg.database + "," + cfg.collection].join("/");
 
@@ -733,6 +733,9 @@ $(function () {
                     console.log(result);
                 });
             });
+        } else {
+            d3.selectAll(".nodecentrality")
+                .remove();
         }
 
         $("#textmode").on("click", function () {
