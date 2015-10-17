@@ -155,7 +155,7 @@ $(function () {
         cfg = _cfg;
 
         window.graph = graph = new clique.Graph({
-            adapter: tangelo.getPlugin("mongo").Mongo({
+            adapter: new tangelo.plugin.mongo.Mongo({
                 host: cfg.host || "localhost",
                 database: cfg.database,
                 collection: cfg.collection
