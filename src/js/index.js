@@ -218,17 +218,8 @@ $(function () {
             }
 
             spec = {
-                logicOp: "and",
-                left: {
-                    queryOp: "==",
-                    field: "filename",
-                    value: filename
-                },
-                right: {
-                    queryOp: "==",
-                    field: "label",
-                    value: label
-                }
+                filename: filename,
+                label: label
             };
 
             graph.adapter.findNode(spec)
@@ -441,9 +432,7 @@ $(function () {
                 restoredNodes = _.invoke(inclusion, "target");
 
                 // Delete all the links.
-                reqs = _.map(from.concat(to), _.bind(function (link) {
-                    this.graph.adapter.destroyLink(link.key());
-                }, this));
+                reqs = _.map(from.concat(to), _.bind(this.graph.adapter.destroyLink, this.graph.adapter));
 
                 return $.apply($, reqs);
             }, this)).then(_.bind(function () {
@@ -451,7 +440,7 @@ $(function () {
                 this.graph.removeNode(node);
 
                 // Delete the node itself.
-                return this.graph.adapter.destroyNode(node.key());
+                return this.graph.adapter.destroyNode(node);
             }, this)).then(_.bind(function () {
                 var reqs;
 
@@ -644,7 +633,7 @@ $(function () {
 
                             // Create a new node that will serve as the power
                             // node.
-                            return this.graph.adapter.newNode({
+                            return this.graph.adapter.createNode({
                                 grouped: true
                             });
                         }, this)).then(_.bind(function (_powerNode) {
@@ -658,7 +647,7 @@ $(function () {
 
                             // Create inclusion links for new power node.
                             inclusionReqs = _.map(nodes, _.bind(function (n) {
-                                return this.graph.adapter.newLink(key, n, {
+                                return this.graph.adapter.createLink(key, n, {
                                     grouping: true
                                 });
                             }, this));
@@ -678,7 +667,7 @@ $(function () {
                                 target = _.contains(nodes, link.target()) ? key : link.target();
 
                                 if (source !== key || target !== key) {
-                                    return this.graph.adapter.newLink(source, target, obj);
+                                    return this.graph.adapter.createLink(source, target, obj);
                                 }
                             }, this));
 
@@ -694,7 +683,7 @@ $(function () {
                                 var reqs = [];
 
                                 if (link.getData("bidir")) {
-                                    reqs.push(this.graph.adapter.newLink(link.target(), link.source(), {
+                                    reqs.push(this.graph.adapter.createLink(link.target(), link.source(), {
                                         bidir: true,
                                         reference: link.key()
                                     }));
@@ -748,8 +737,6 @@ $(function () {
             // If there are initialization parameters, pull in the requested
             // neighborhood.
             var args = tangelo.queryArguments(),
-                spec,
-                query,
                 radius = 1;
 
             if (_.size(args) > 0) {
@@ -758,13 +745,7 @@ $(function () {
                     delete args.radius;
                 }
 
-                spec = _.map(args, function (value, key) {
-                    return key + " == \"" + value + "\"";
-                }).join(" & ");
-
-                query = parser.parse(spec);
-
-                graph.adapter.findNodes(query).then(function (nodes) {
+                graph.adapter.findNodes(args).then(function (nodes) {
                     _.each(nodes, function (node) {
                         graph.addNeighborhood({
                             center: node,
